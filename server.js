@@ -1,22 +1,34 @@
 const express = require('express')
 const app = express()
 const bodyParser = require('body-parser')
+const cors = require("cors");
 const helmet = require('helmet');
-require('dotenv').config({path:'.env'});
-const port = process.env.PORT 
-
-app.use(bodyParser.urlencoded({ extended: true }))
-app.use(bodyParser.json())
+const config = require('./api/config/config');
 
 app.use(helmet());
 
-let routes = require('./api/routes') //importing route
-routes(app)
+// const corsOptions = {
+//     origin: "http://localhost:8080"
+// };
+  
+app.use(cors());
 
-app.use(function(req, res) {
-    res.status(404).send({url: req.originalUrl + ' not found'})
+// parse requests of content-type - application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: true }))
+
+// parse requests of content-type - application/json
+app.use(bodyParser.json())
+
+// database
+const db = require("./api/models");
+db.sequelize.sync();
+
+//routes
+require('./api/routes/book.router')(app)
+
+const port = config.PORT || 8080
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}.`);
 })
-
-app.listen(port)
 
 console.log('RESTful API server started on: ' + port)
