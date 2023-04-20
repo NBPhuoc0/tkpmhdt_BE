@@ -25,6 +25,7 @@ db.sequelize.sync();
 
 //routes
 require('./api/routes/book.router')(app)
+require('./api/routes/user.router')(app)
 
 const port = config.PORT || 8080
 app.listen(port, () => {
