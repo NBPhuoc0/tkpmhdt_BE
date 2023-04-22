@@ -2,7 +2,7 @@ const db = require("../models");
 
 module.exports = {
     create : (req, res) => {
-        if (!req.body.title && !req.body.author && !req.body.price && !req.body.description && !req.body.publication_date) {
+        if (!req.body.title && !req.body.author && !req.body.price && !req.body.description && !req.body.publication_date && !req.body.categories) {
             res.status(400).send({
               message: "Content can not be empty!"
             });
@@ -18,10 +18,18 @@ module.exports = {
             publication_date: req.body.publication_date
         };
 
+        const categories = req.body.categories;
+
         // save book in the database
         db.books.create(book)
         .then(data => {
-            res.send(data);
+            categories.forEach(item => {
+                db.book_category.create({book_id: data.id, category_id: item})
+            })
+            res.status(200).send({
+                message: "Book was created successfully."
+
+            });
         })
     },
 
@@ -63,138 +71,104 @@ module.exports = {
         })
     },
 
+    addBook_Category : (req, res) => {
+        const book_id = req.params.id;
+        const categories = req.body.id;
 
-    findAll : async (req, res) => {
-        let page = req.query.page;
-        if (page == null || page <= 0) page = 1
-        
-        await db.books.findAll({ offset: (page-1) * 10, limit: 10 })
-        .then(data => {
-            res.send(data);
-        })
-    },
-    
-    findByid : (req, res) => {
-        const id = req.params.id;
-        if (id == null){
-            res.status(400).send({
-                message: "ID can not be empty!"
-            });
-            return;
-        }
-
-        db.books.findByPk(id)
-        .then(data => {
-            res.send(data);
-        })
-    },
-
-    findByAuthor : (req, res) => {
-        const author = req.query.author;
-        if (author == ""){
-            res.status(400).send({
-                message: "Author can not be empty!"
+        categories.forEach(item => {
+            db.book_category.create({
+                book_id: book_id,
+                category_id: item
             })
-            return;
-        }
-        let page = req.query.page;
-        if (page == null || page <= 0) page = 1;
+        });
 
+        res.status(200).send({
+            message: "successfully."
+        });
+
+    },
+
+    removeBook_Category : (req, res) => {
+        const book_id = req.params.id;
+        const categories = req.body.id;
+
+        categories.forEach(item => {
+            db.book_category.destroy({
+                where: { book_id: book_id, category_id: item },
+                force: true
+            })
+        });
+
+        res.status(200).send({
+            message: "successfully."
+        });
+    },
+
+
+    findAll : (req, res) => {
+        let author = req.query.author;
+        let title = req.query.title;
+        let from = req.query.from;
+        let to = req.query.to;
+        let year = req.query.year;
+        let page = req.query.page;
+        let sortD = req.query.sortD;
+        let sortBy = req.query.sort;
+
+        if (author == null) author = "";
+        if (title == null) title = "";
+        if (from == null || from <= 0) from = 0;
+        if (to == null || to <= 0) to = 1000000000; // 1 tỷ =)))
+        if (year == null) year = "";
+
+        if (page == null || page <= 0) page = 1
+        sortD == 'null' ? 'DESC' : 'ASC'
+        sortBy == 'null' ? 'id' : sortBy
+        
         db.books.findAll(
-            { 
+            {
                 where: 
                 { 
                     author: 
                     {
                         [db.Op.substring]: author 
-                    }
-                } 
-            }, 
-            { offset: (page-1) * 10, limit: 10 })
-        .then(data => {
-            res.send(data);
-        })
-    },
-
-    findByTitle : (req, res) => {
-        const title = req.query.title;
-        if (title == null){
-            res.status(400).send({
-                message: "Title can not be empty!"
-            });
-            return;
-        }
-        let page = req.query.page;
-        if (page == null || page <= 0) page = 1;
-
-        db.books.findAll(
-            { 
-                where: { 
+                    },
                     title: 
                     {
                         [db.Op.substring]: title 
-                    } 
-                }
-            }, 
-            { offset: (page-1) * 10, limit: 10 })
-        .then(data => {
-            res.send(data);
-        })
-    },
-
-    findByPrice : (req, res) => {
-        let from = req.query.from;
-        let to = req.query.to;
-        if (from == null || from <= 0) from = 0;
-        if (to == null || to <= 0) to = 1000000000; // 1 tỷ =)))
-
-        let page = req.query.page;
-        let sort = req.query.sort;
-        if (page == null || page <= 0) page = 1;
-        if (sort != 'ASC' || sort != 'DESC') sort = 'ASC';
-
-        db.books.findAll(
+                    },
+                    price:
+                    {
+                        [db.Op.between]: [from, to]
+                    }
+                } 
+            },
+            {
+                atributtes: [ db.sequelize.fn('YEAR', db.sequelize.col('publication_date')),year ]
+            },
             { 
-                where: 
-                { 
-                    price:{
-                        [db.Op.or] : [ { [db.Op.gte] : from}, {[db.Op.lte] : to } ]
-                    } 
+                offset: (page-1) * 10,
+                limit: 10,
+                order: [ sortBy, sortD ]
+            })
+            .then(data => {
+                res.send(data);
+            })
+    },
+    
+    findByid : (req, res) => {
+        const id = req.params.id;
+
+        db.books.findByPk(id, 
+            { 
+                include: 
+                {
+                    model: db.category
                 }
-            }, 
-            { offset: (page-1) * 10, limit: 10, order: [['price', sort]]}
-            )
+            })
         .then(data => {
             res.send(data);
         })
     },
 
-    findByYear : (req, res) => {
-        const year = req.query.year;
-        let page = req.query.page;
-        let sort = req.query.sort;
-        if (page == null || page <= 0) page = 1;
-        if (sort != 'ASC' || sort != 'DESC') sort = 'ASC';
-
-        if (year == null) {
-            db.books.findAll({ offset: (page-1) * 10, limit: 10, order: [['publication_date', sort]]})
-            .then(data => {
-                res.send(data);
-            })
-        }
-        else{
-            db.books.findAll(
-                { 
-                    where : db.sequelize.where(db.sequelize.fn('YEAR', db.sequelize.col('publication_date')), year)  
-                },
-                { 
-                    offset: (page-1) * 10, limit: 10, 
-                    order: [['publication_date', sort]]
-                }
-            )
-            .then(data => {
-                res.send(data);
-            })
-        }        
-    },
 }

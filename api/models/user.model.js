@@ -39,9 +39,9 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
       {
         // Triggers
         hooks : {
-          afterCreate: async (user, options) => {
+          afterCreate: (user, options) => {
             console.log('User created: ' + user.id);
-            await sequelize.models.cart.create({ user_id: user.id }).then(cart => {
+            sequelize.models.cart.create({ user_id: user.id }).then(cart => {
               console.log('Cart created: ' + cart.id);
             });
           },
