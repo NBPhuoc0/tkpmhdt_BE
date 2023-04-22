@@ -115,15 +115,15 @@ module.exports = {
         let sortD = req.query.sortD;
         let sortBy = req.query.sort;
 
-        if (author == null) author = "";
-        if (title == null) title = "";
-        if (from == null || from <= 0) from = 0;
-        if (to == null || to <= 0) to = 1000000000; // 1 tỷ =)))
-        if (year == null) year = "";
+        author = author ? author : ''
+        title = title ? title : ''
+        from = from ? from : 0
+        to = to ? to : 1000000000 // 1 tỷ =)))
+        year = year ? year : ''
 
         if (page == null || page <= 0) page = 1
-        sortD == 'null' ? 'DESC' : 'ASC'
-        sortBy == 'null' ? 'id' : sortBy
+        sortD = sortD ? sortD : 'ASC'
+        sortBy = sortBy ? sortBy : 'id'
         
         db.books.findAll(
             {

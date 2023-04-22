@@ -60,7 +60,8 @@ module.exports = {
     },
 
     findAll : (req, res) => {
-        const name = req.query.name;
+        let name = req.query.name;
+        name = name ? name : '';
 
         db.category.findAll({ where: {name : { [db.Op.substring]: name }}})
         .then(data => {

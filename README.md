@@ -7,12 +7,13 @@
 To run this project, you will need to add the following environment variables to your .env file
 
 ```bash
-DB_HOST="localhost"
-DB_USER="{username}"
-DB_PASS="{password}"
-DB_NAME="{database name}"
+DB_HOST="{host}" # remote database: db4free.net
+DB_USER="{username}" #  tkpmoop_4
+DB_PASS="{password}" # male0011
+DB_NAME="{database name}" #  bookstore_tkpm_4
 PORT = 3000
 ```
+### https://www.db4free.net/phpMyAdmin/ - username : tkpmoop_4  - password : male0011 
 
 
 ## Deployment
@@ -31,29 +32,4 @@ To deploy this project run
 
 ## API Reference
 
-chưa làm kịp :v
-
-#### Get all items
-
-```http
-  GET /api/items
-```
-
-| Parameter | Type     | Description                |
-| :-------- | :------- | :------------------------- |
-| `api_key` | `string` | **Required**. Your API key |
-
-#### Get item
-
-```http
-  GET /api/items/${id}
-```
-
-| Parameter | Type     | Description                       |
-| :-------- | :------- | :-------------------------------- |
-| `id`      | `string` | **Required**. Id of item to fetch |
-
-#### add(num1, num2)
-
-Takes two numbers and returns the sum.
-
+https://clear-crate-a11.notion.site/b15dc490f05341c0ae44ce06f8887b06?v=9470b8132c8f492481d7a1d648abca3e
