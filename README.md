@@ -30,6 +30,6 @@ To deploy this project run
   npm run dev
 ```
 
-## API Reference
+## API document
 
 https://clear-crate-a11.notion.site/b15dc490f05341c0ae44ce06f8887b06?v=9470b8132c8f492481d7a1d648abca3e
