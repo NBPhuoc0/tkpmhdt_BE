@@ -3,7 +3,8 @@ const app = express()
 const bodyParser = require('body-parser')
 const cors = require("cors");
 const helmet = require('helmet');
-const config = require('./api/config/config');
+const dbconfig = require('./api/config/db.config');
+const authconfig = require('./api/config/auth.config');
 
 app.use(helmet());
 
@@ -21,13 +22,15 @@ app.use(bodyParser.json())
 
 // database
 const db = require("./api/models");
-db.sequelize.sync();
+db.sequelize.sync(
+    { alter: true }
+);
 
 //routes
 require('./api/routes/admin.router')(app)
 require('./api/routes/user.router')(app)
 
-const port = config.PORT || 8080
+const port = dbconfig.PORT || 8080
 app.listen(port, () => {
     console.log(`Server is running on port ${port}.`);
 })

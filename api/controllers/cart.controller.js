@@ -1,58 +1,72 @@
 const db = require("../models");
+const { findByid } = require("./book.controller");
 
 module.exports = {
-    addItem : (req, res) => {
-        if (!req.body.cart_id && !req.body.book_id) {
+    addItem : async (req, res) => {
+        if (!req.body.user_id || !req.body.book_id) {
             res.status(400).send({
               message: "Content can not be empty!"
             });
             return;
         }
 
-        // get data from request body
-        const item = {
-            cart_id: req.body.cart_id,
-            book_id: req.body.book_id,
-            quantity: req.body.quantity
-        };
+        let quantity = req.body.quantity || 1;
 
-        // save user in the database
-        db.cart_details.create(item)
-        .then(data => {
-            res.send(data);
-        })
-    
-    },
-
-    updateItem : (req, res) => {
-        if (!req.body.cart_id && !req.body.book_id) {
-            res.status(400).send({
-              message: "Content can not be empty!"
-            });
-            return;
-        }
-
-        // get data from request body
-        const item = {
-            cart_id: req.body.cart_id,
-            book_id: req.body.book_id,
-            quantity: req.body.quantity
-        };
-
-        // save user in the database
-        db.cart_details.update(item, {
+        let cart_id = await db.cart.findOne({
             where: {
-                cart_id: item.cart_id,
-                book_id: item.book_id
+                user_id: req.body.user_id
             }
+        }).then(data => {
+            if (data) {
+                return data.id;
+            } else {
+                return db.cart.create({
+                    user_id: req.body.user_id
+                }).then(data => {
+                    return data.id;
+                })}
+        }).catch(err => {
+            res.status(500).send({
+                message: err.message || "Some error occurred while creating the Cart."
+            });
         })
-        .then(data => {
-            res.send(data);
+                
+        await db.cart_details.findOne({
+            where: {
+                cart_id: cart_id,
+                book_id: req.body.book_id
+        }})
+        .then(async (data) =>  {
+            if (data) 
+            { 
+                quantity = await (data.quantity + quantity)
+                await db.cart_details.destroy({
+                        where: {
+                            cart_id: cart_id,
+                            book_id: req.body.book_id
+                        }
+                    })
+            }
+            await db.cart_details.create({
+                cart_id: cart_id,
+                book_id: req.body.book_id,
+                quantity: quantity
+            }).then(data => {
+                res.status(200).send({
+                    message: "Item was added successfully!"
+                });
+            })
+            
         })
+        .catch(err => {
+            res.status(500).send({
+                message: err.message || "Some error occurred while creating the Cart."
+            });
+        })            
     },
 
     removeItem : (req, res) => {
-        if (!req.body.cart_id && !req.body.book_id) {
+        if (!req.body.user_id || !req.body.book_id) {
             res.status(400).send({
               message: "Content can not be empty!"
             });
@@ -73,8 +87,15 @@ module.exports = {
             }
         })
         .then(data => {
-            res.send(data);
+            res.status(200).send({
+                message: "Item was removed successfully!"
+            });
         })
+        .catch(err => {
+            res.status(500).send({
+                message: err.message || "Some error occurred while removing the Item."
+            });
+        });
     },
 
     getCart : async (req, res) => {
@@ -89,22 +110,21 @@ module.exports = {
             where: {
                 user_id: req.body.user_id
             },
-            attributes: ['id']
-        }).then()
-        // get data from request body
-        const item = {
-            cart_id: req.body.cart_id
-        };
-
-        // save user in the database
-        db.cart_details.findAll({
-            where: {
-                cart_id: item.cart_id
-            }
+            include: [{
+                attributes : ['id', 'title', 'author', 'price', 'description', 'publication_date'], 
+                model: db.books, 
+                attributes: ['title'], 
+                through: {attributes: ['quantity','total']}
+            }]
         })
         .then(data => {
-            res.send(data);
+            res.status(200).send(data);
         })
+        .catch(err => {
+            res.status(500).send({
+                message: err.message || "Some error occurred while retrieving carts."
+            });
+        });
     }
 
 

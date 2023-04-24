@@ -12,6 +12,9 @@ module.exports = app => {
   // Signin
   router.post("/signin", userController.signin);
 
+  // update user
+  router.put("/user/:id", userController.updateProfile);
+
   // add category
   router.post("/categories", categoryController.create);
 
@@ -44,6 +47,17 @@ module.exports = app => {
 
   // remove category from book
   router.delete("/books/:id/categories", bookController.removeBook_Category);
+
+  // get Oders
+  router.get("/order/all", orderController.getAllOder);
+
+  // get Oders
+  router.get("/order", orderController.getOders);
+
+  // get order by id
+  router.get("/order/:id", orderController.getOderDetails);
+
+
 
 
   app.use('/admin', router);

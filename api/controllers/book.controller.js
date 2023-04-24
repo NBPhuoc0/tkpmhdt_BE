@@ -2,42 +2,47 @@ const db = require("../models");
 
 module.exports = {
     create : (req, res) => {
-        if (!req.body.title && !req.body.author && !req.body.price && !req.body.description && !req.body.publication_date && !req.body.categories) {
+        if (!req.body.title || !req.body.author || !req.body.price || !req.body.description || !req.body.publication_date || !req.body.image) {
             res.status(400).send({
-              message: "Content can not be empty!"
+              message: "req.body can not be empty!"
             });
             return;
         }
 
         // get data from request body
-        const book = {
-            title: req.body.title,
-            author: req.body.author,
-            price: req.body.price,
-            description: req.body.description,
-            publication_date: req.body.publication_date
-        };
 
-        const categories = req.body.categories;
+        const categories = req.body.categories || [];
 
         // save book in the database
-        db.books.create(book)
+        db.books.create(req.body)
         .then(data => {
             categories.forEach(item => {
-                db.book_category.create({book_id: data.id, category_id: item})
+                db.book_category.create({book_id: data.id, category_id: item}).catch(err => {
+                    res.status(500).send({
+                        message: err.message || "Some error occurred while creating the Book."
+                    });
+                });
             })
             res.status(200).send({
                 message: "Book was created successfully."
 
             });
-        })
+        }).catch(err => {
+            res.status(500).send({
+                message: err.message || "Some error occurred while creating the Book."
+            });
+        });
     },
 
     update : (req, res) => {
-        const id = req.params.id;
+        if (!req.body.title || !req.body.author || !req.body.price || !req.body.description || !req.body.publication_date || !req.body.image) {
+            res.status(400).send({
+                message: "req.body can not be empty!"
+            })
+        };
 
         db.books.update(req.body, {
-            where: { id: id }
+            where: { id: req.params.id }
         })
         .then(num => {
             if (num == 1) {
@@ -46,7 +51,7 @@ module.exports = {
                 });
             } else {
                 res.send({
-                    message: `Cannot update Book with id=${id}. Maybe Book was not found or req.body is empty!`
+                    message: `Cannot update Book with id = ${req.params.id}. Maybe Book was not found !`
                 });
             }
         })
@@ -65,7 +70,7 @@ module.exports = {
                 });
             } else {
                 res.send({
-                    message: `Cannot delete Book with id=${id}. Maybe Book was not found!`
+                    message: `Cannot delete Book with id = ${id}. Maybe Book was not found!`
                 });
             }
         })
@@ -152,7 +157,13 @@ module.exports = {
                 order: [ sortBy, sortD ]
             })
             .then(data => {
-                res.send(data);
+                if (data.length > 0) {
+                    res.send(data);
+                } else {
+                    res.send({
+                        message: "No books found !"
+                    });
+                }
             })
     },
     
@@ -167,7 +178,13 @@ module.exports = {
                 }
             })
         .then(data => {
-            res.send(data);
+            if (data) {
+                res.send(data);
+            } else {
+                res.send({
+                    message: `Cannot find Book with id = ${id}.`
+                });
+            }
         })
     },
 

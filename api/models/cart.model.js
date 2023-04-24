@@ -16,6 +16,14 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
           type: DataTypes.INTEGER,
           defaultValue: 0
         }
+      },
+      {
+        // Triggers
+        hooks : {
+          beforeDestroy: (cart, options) => {
+            sequelize.models.cart.created({user_id : cart.user_id})
+          }
+        }
       }
     );
   

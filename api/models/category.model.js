@@ -12,6 +12,12 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
         name: {
           type: DataTypes.STRING,
           unique: true
+        },
+        description: {
+          type: DataTypes.STRING
+        },
+        image : {
+          type: DataTypes.STRING
         }
       }
     );

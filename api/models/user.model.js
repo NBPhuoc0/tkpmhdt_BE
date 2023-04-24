@@ -31,6 +31,10 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
           type: DataTypes.STRING,
           defaultValue: 'địa chỉ'
         },
+        avatar: {
+          type: DataTypes.STRING,
+          defaultValue: 'avatar'
+        },
         isAmin: {
           type: DataTypes.BOOLEAN,
           defaultValue: false

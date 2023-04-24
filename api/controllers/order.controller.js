@@ -3,27 +3,83 @@ const { findAll } = require("./category.controller");
 
 module.exports = {
     createOder : async (req, res) => {
-        if (!req.body.cart_id) {
+        if (!req.body.user_id) {
             res.status(400).send({
               message: "Content can not be empty!"
             });
             return;
         }
 
-        // save user in the database
-        await db.order.create(order({ user_id: user.id }))
-        .then(data => {
-            let order_id = data.id
+        let cart_id = null
+
+        await db.cart.findOne({
+            where: {
+                user_id: req.body.user_id
+            }
+        }).then(data => {
+            if (data) {
+                cart_id = data.id;
+            } else {
+                db.cart.create({
+                    user_id: req.body.user_id
+                }).then(data => {
+                    cart_id = data.id;
+                })
+            }
+        }).catch(err => {
+            res.status(500).send({
+                message: err.message || "Some error occurred while creating the Cart."
+            });
         })
+
+        let order_id = null
+        await db.order.create({ user_id: req.body.user_id })
+        .then(data => {
+            order_id = data.id;
+        })
+        .catch(err => {
+            res.status(500).send({
+                message: err.message || "Some error occurred while creating the Order."
+            });
+        });
 
         await db.cart_details.findAll({
             where: {
-                cart_id: req.body.cart_id
+                cart_id: cart_id
             },
-        }).then(data => {
-            data.forEach(item => {
-                addItem(req.body.cart_id,item.book_id,order_id)
+        }).then( async (data) => {
+            await data.forEach(item => {
+                db.cart_details.findOne({
+                    where: {
+                        cart_id: cart_id,
+                        book_id: item.book_id
+                    }
+                }).then((data) =>  {
+                    if(data) {
+                        (db.order_details.create({
+                            order_id: order_id,
+                            book_id: data.book_id,
+                            quantity: data.quantity,
+                        })).catch(err => {
+                            res.status(500).send({
+                                message: err.message || "Some error occurred while add item to the Order."
+                            });
+                        })
+                    }
+                }).catch(err => {
+                    res.status(500).send({
+                        message: err.message || "Some error occurred while get Cart detail."
+                    });
+                })
             })
+            await res.status(200).send({
+                message: "Order was created successfully!"
+            });
+            
+        }).catch(err => {
+            res.status(500).send({
+                message: err.message || "Some error occurred while find the Cart."
+            });
         })
     },
 
@@ -44,27 +100,62 @@ module.exports = {
                 });
             }
         })
-    }
+    },
 
-}
+    getAllOder: (req, res) => {
+        db.order.findAll({
+            include: [db.user]
+        })
+        .then(data => {
+            res.send(data);
+        })
+        .catch(err => {
+            res.status(500).send({
+                message: err.message || "Some error occurred while retrieving Order."
+            });
+        });
+    },
 
-async function addItem (cart_id,book_id,order_id) {
-    let item = null
+    getOders : (req, res) => {
+        const user_id = req.body.user_id;
 
-    await db.cart_details.findAll({
-        where: {
-            cart_id: cart_id,
-            book_id: book_id
-        },
-        attributes: ['quantity']
-    }).then(data => {item = {
-        order_id: order_id,
-        book_id: book_id,
-        quantity: data
-    }})
+        db.order.findAll({
+            where: { user_id: user_id }
+        })
+        .then(data => {
+            res.send(data);
+        })
+        .catch(err => {
+            res.status(500).send({
+                message: err.message || "Some error occurred while retrieving Order."
+            });
+        });
+    },
 
-    await db.order_details.create(item)
-    .then(data => {
-        res.send(data);
-    })
+    getOderDetails : (req, res) => {
+        db.order.findOne({
+            where: { id: req.params.id },
+            include: [{
+                attributes : ['id', 'title', 'author', 'price', 'description', 'publication_date'], 
+                model: db.books, 
+                attributes: ['title'], 
+                through: {attributes: ['quantity','total']}
+            }]
+        })
+        .then(data => {
+            if (data) {
+                res.send(data);
+            } else {
+                res.status(400).send({
+                    message: "Order not found!"              
+                });
+            }
+        })
+        .catch(err => {
+            res.status(500).send({
+                message: err.message || "Some error occurred while retrieving Order."
+            });
+        });
+    },
+
 }
