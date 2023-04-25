@@ -111,8 +111,7 @@ module.exports = {
 
         categories.forEach(item => {
             db.book_category.destroy({
-                where: { book_id: book_id, category_id: item },
-                force: true
+                where: { book_id: book_id, category_id: item }
             })
         });
 
@@ -161,7 +160,7 @@ module.exports = {
                 } 
             },
             {
-                atributtes: [ db.sequelize.fn('YEAR', db.sequelize.col('publication_date')),year ]
+                attributes: [ db.sequelize.fn('YEAR', db.sequelize.col('publication_date')),year ]
             },
             { 
                 offset: (page-1) * 10,
@@ -243,7 +242,9 @@ module.exports = {
                         [db.Op.between]: [from, to]
                     }
                 },
-                atributtes: [ db.sequelize.fn('YEAR', db.sequelize.col('publication_date')),year ]                              
+                attributes: { exclude: ["book_category"],},
+                attributes : [ db.sequelize.fn('YEAR', db.sequelize.col('publication_date')),year ],
+                through: {attributes: []}
             }] 
         },{            
             offset: (page-1) * 10,

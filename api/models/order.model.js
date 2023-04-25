@@ -18,17 +18,7 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
         }
       },
       {
-        // Triggers
-        hooks : {
-          afterCreate: async (order, options) => {
-            await sequelize.models.cart.destroy({
-              where: {
-                user_id: order.user_id
-              }
-            })
-          }
-
-        } 
+        // Options
       }
     );
   

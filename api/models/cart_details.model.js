@@ -1,3 +1,4 @@
+
 module.exports = (sequelize, Sequelize, DataTypes) => {
     const cart_details = sequelize.define(
       "cart_details", // Model name
@@ -16,30 +17,14 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
         // Triggers
         hooks : {
           afterCreate: async (cart_details, options) => {
-            let price = 0;
-            await sequelize.models.book.findOne({
-              attributes: ['price'],
-              where: {
-                id: cart_details.book_id
-              }
-            }).then(data => {
-              price = data.price * cart_details.quantity
-            })
+            const data = await sequelize.models.book.findOne({where : {id:cart_details.book_id}})
+            let price = (data.price * cart_details.quantity)
             await sequelize.models.cart_details.increment( {total:price}, {where : {cart_id:cart_details.cart_id, book_id:cart_details.book_id} } )
             await sequelize.models.cart.increment( {total:price, total_quantity:cart_details.quantity}, {where : {id:cart_details.cart_id} } )
           },
 
-          beforeDestroy: async (cart_details, options) => {
-            let price = 0;
-            await sequelize.models.book.findOne({
-              attributes: ['price'],
-              where: {
-                id: cart_details.book_id
-              }
-            }).then(data => {
-              price = data.price * cart_details.quantity
-            })
-            await sequelize.models.cart.decrement( {total:price, total_quantity:cart_details.quantity}, {where : {id:cart_details.cart_id} } )
+          beforeDestroy  : (cart_details, options) => {
+            sequelize.models.cart.decrement( {total : cart_details.total, total_quantity : cart_details.quantity}, {where : {id : cart_details.cart_id} } )
           }
         }
       }

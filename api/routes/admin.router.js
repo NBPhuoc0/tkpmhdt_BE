@@ -12,55 +12,58 @@ module.exports = (app) => {
   router.get("/profile", verify, userController.findByid);
 
   // update user
-  router.put("/profile/:id", userController.updateProfile);
+  router.put("/profile", verify, userController.updateProfile);
 
   // get all users
-  router.get("/users", userController.findAll);
+  router.get("/users", verify, userController.findAll);
 
   // get user's profile
-  router.get("/users/:id", userController.findByid);
+  router.get("/users/:id", verify, userController.findByid);
 
   // add category
-  router.post("/categories", categoryController.create);
+  router.post("/categories", verify, categoryController.create);
 
   // update category
-  router.put("/categories/:id", categoryController.update);
+  router.put("/categories/:id", verify, categoryController.update);
 
   // delete category
-  router.delete("/categories/:id", categoryController.delete);
+  router.delete("/categories/:id", verify, categoryController.delete);
 
   // get all categories
   router.get("/categories", categoryController.findAll);
 
   // Create a new Book
-  router.post("/books", bookController.create);
+  router.post("/books", verify, bookController.create);
 
   // Update a Book with id
-  router.put("/books/:id", bookController.update);
+  router.put("/books/:id", verify, bookController.update);
 
   // Delete a Book with id
-  router.delete("/books/:id", bookController.delete);
+  router.delete("/books/:id", verify, bookController.delete);
 
   // Retrieve all Books
   router.get("/books", bookController.findAll);
 
   // find a single book with id
   router.get("/books/:id", bookController.findByid);
-
+  
+  // find books by category
+  router.get("/books/category", bookController.findByCategory);  
+  
   // add category to book
-  router.post("/books/:id/categories", bookController.addBook_Category);
+  router.post("/books/:id/categories", verify, bookController.addBook_Category);
 
   // remove category from book
-  router.delete("/books/:id/categories", bookController.removeBook_Category);
+  router.delete("/books/:id/categories", verify, bookController.removeBook_Category);
 
-  // get Oders
-  router.get("/order/all", orderController.getAllOder);
+  // get All Oders
+  router.get("/order/all", verify, orderController.getAllOder);
 
-  // get Oders
-  router.get("/order", orderController.getOders);
+  // get order by user id
+  router.get("/order/user/:id", verify, orderController.getOders);
 
   // get order by id
-  router.get("/order/:id", orderController.getOderDetails);
+  router.get("/order/:id", verify, orderController.getOderDetails);
 
 
   app.use('/admin', router);

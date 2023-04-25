@@ -17,6 +17,7 @@ module.exports = {
         }
         req.user_id = decoded.id;
         req.isAdmin = decoded.isAdmin;
+        next();
       });
     },
 

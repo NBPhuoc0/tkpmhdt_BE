@@ -12,7 +12,7 @@ module.exports = (app) => {
     router.get("/profile", verify, userController.findByid);
 
     // update user
-    router.put("/profile/:id", verify, userController.updateProfile);
+    router.put("/profile", verify, userController.updateProfile);
 
     // Retrieve all Books
     router.get("/books", bookController.findAll);
@@ -39,7 +39,7 @@ module.exports = (app) => {
     router.post("/order", verify, orderController.createOder);
 
     // delete order
-    router.delete("/order/:id", verify, orderController.deleteOrder);
+    // router.delete("/order", verify, orderController.deleteOrder);
     
     // get all orders
     router.get("/order", verify, orderController.getOders);

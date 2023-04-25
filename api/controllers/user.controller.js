@@ -68,9 +68,6 @@ module.exports = {
                 expiresIn: 60*60*24 // 24 hours
             });
             res.status(200).send({
-                id: data.id,
-                username: data.username,
-                email: data.email,
                 authToken: token
             });
             
@@ -91,7 +88,7 @@ module.exports = {
         // save user in the database
         db.user.update(req.body, {
             where: {
-                id: req.body.id
+                id: req.user_id
             }
         })
         .then(data => {

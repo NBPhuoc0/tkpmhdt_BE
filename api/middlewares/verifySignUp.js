@@ -7,7 +7,10 @@ module.exports = {
             username: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).required(),
             email: Joi.string().email().required(),
             password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{6,30}$')).required(),
-            phone_number: Joi.string().pattern(new RegExp('^[0-9]{10,11}$'))
+            phone_number: Joi.string().pattern(new RegExp('^[0-9]{10,11}$')),
+            full_name : Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{0,30}$')),
+            address : Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{0,70}$')),
+            avatar : Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{1,100}$'))
         }); 
         try {
             const value = schema.validate(req.body);

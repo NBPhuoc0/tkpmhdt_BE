@@ -3,84 +3,60 @@ const { findAll } = require("./category.controller");
 
 module.exports = {
     createOder : async (req, res) => {
-        if (!req.body.user_id) {
+        if (!req.user_id) {
             res.status(400).send({
               message: "Content can not be empty!"
             });
             return;
         }
 
-        let cart_id = null
-
-        await db.cart.findOne({
+        let cart = await db.cart.findOne({
             where: {
-                user_id: req.body.user_id
+                user_id: req.user_id
             }
-        }).then(data => {
-            if (data) {
-                cart_id = data.id;
-            } else {
-                db.cart.create({
-                    user_id: req.body.user_id
-                }).then(data => {
-                    cart_id = data.id;
-                })
-            }
-        }).catch(err => {
-            res.status(500).send({
-                message: err.message || "Some error occurred while creating the Cart."
-            });
         })
 
-        let order_id = null
-        await db.order.create({ user_id: req.body.user_id })
-        .then(data => {
-            order_id = data.id;
-        })
-        .catch(err => {
-            res.status(500).send({
-                message: err.message || "Some error occurred while creating the Order."
+        if (cart != null) {
+            if (cart.total == 0) {
+                return res.status(400).send({
+                    message: "Cart is empty!"
+                });
+            }
+        } else {
+            return res.status(400).send({
+                message: "Cart is empty!"
             });
+        }
+        
+        let order = await db.order.create({ user_id: req.user_id, total: cart.total, total_quantity: cart.total_quantity })
+        
+        const cartIteam = await db.cart_details.findAll({
+            where: {
+                cart_id: cart.id
+            }
+        })
+              
+        cartIteam.forEach(item => {
+            db.order_details.create({
+                order_id: order.id,
+                book_id: item.book_id,
+                quantity: item.quantity,
+                total: item.total
+            })
         });
 
-        await db.cart_details.findAll({
-            where: {
-                cart_id: cart_id
-            },
-        }).then( async (data) => {
-            await data.forEach(item => {
-                db.cart_details.findOne({
-                    where: {
-                        cart_id: cart_id,
-                        book_id: item.book_id
-                    }
-                }).then((data) =>  {
-                    if(data) {
-                        (db.order_details.create({
-                            order_id: order_id,
-                            book_id: data.book_id,
-                            quantity: data.quantity,
-                        })).catch(err => {
-                            res.status(500).send({
-                                message: err.message || "Some error occurred while add item to the Order."
-                            });
-                        })
-                    }
-                }).catch(err => {
-                    res.status(500).send({
-                        message: err.message || "Some error occurred while get Cart detail."
-                    });
-                })
+        try {
+            db.cart.destroy({
+                where: { id: cart.id }            
             })
-            await res.status(200).send({
-                message: "Order was created successfully!"
+        } catch (error) {
+            return res.status(500).send({
+                message: err.message || "Some error occurred while destroy the cart."
             });
-            
-        }).catch(err => {
-            res.status(500).send({
-                message: err.message || "Some error occurred while find the Cart."
-            });
-        })
+        }
+
+        res.status(200).send(order)
+
     },
 
     deleteOrder : (req, res) => {
@@ -103,12 +79,7 @@ module.exports = {
     },
 
     getAllOder: (req, res) => {
-        db.order.findAll({
-            include: [{
-                model: db.user,
-                attributes: ['name', 'email', 'phone', 'address']
-            }]
-        })
+        db.order.findAll()
         .then(data => {
             res.send(data);
         })
@@ -119,8 +90,13 @@ module.exports = {
         });
     },
 
-    getOders : (req, res) => {
-        const user_id = req.body.user_id;
+    getOders : async (req, res) => {
+        let user_id = null
+        if( req.isAdmin ) {
+            user_id = await req.params.id
+        }else { 
+            user_id = await req.user_id 
+        }
 
         db.order.findAll({
             where: { user_id: user_id }
@@ -139,7 +115,7 @@ module.exports = {
         db.order.findOne({
             where: { id: req.params.id },
             include: [{
-                model: db.book,
+                model: db.books,
                 attributes : ['id', 'title', 'author', 'price', 'description', 'publication_date'], 
                 through: {attributes: ['quantity','total']}
             }]
