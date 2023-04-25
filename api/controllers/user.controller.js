@@ -1,21 +1,20 @@
 const db = require("../models");
 const jwt = require("jsonwebtoken");
 const config = require("../config/auth.config");
+const bcrypt = require("bcrypt");
 
 module.exports = {
-    signup : (req, res) => {
-        if (!req.body.username && !req.body.email && !req.body.password) {
-            res.status(400).send({
-              message: "Content can not be empty!"
-            });
-            return;
-        }
+    signup : async (req, res) => {
+
+        const salt = bcrypt.genSaltSync(7)
+
+        const hashPass = bcrypt.hashSync(req.body.password, salt)
 
         // get data from request body
         const user = {
             username: req.body.username,
             email: req.body.email,
-            password: req.body.password
+            password: hashPass
         };
 
         // save user in the database
@@ -50,21 +49,31 @@ module.exports = {
         db.user.findOne({
             where: {
                 username: user.username,
-                password: user.password
             }
         })
         .then(data => {
-            if (data){
-                var token = jwt.sign({ id: data.id }, config.secret, {
-                    expiresIn: 60*60*24 // 24 hours
-                });
-                res.status(200).send({
-                    id: data.id,
-                    username: data.username,
-                    email: data.email,
-                    accessToken: token
+            if (!data) {
+                return res.status(404).send({
+                    message: "User Not found."
                 });
             }
+
+            if ( !bcrypt.compareSync(user.password, data.password) ){
+                return res.status(401).send({
+                    message: "Wrong Password!"
+                });
+            }
+
+            var token = jwt.sign({ id: data.id, isAdmin : data.isAdmin }, config.secret, {
+                expiresIn: 60*60*24 // 24 hours
+            });
+            res.status(200).send({
+                id: data.id,
+                username: data.username,
+                email: data.email,
+                authToken: token
+            });
+            
         })
         .catch(err => {
             res.status(500).send({
@@ -75,10 +84,9 @@ module.exports = {
 
     updateProfile : (req, res) => {
         if (!req.body) {
-            res.status(400).send({
+            return res.status(400).send({
               message: "Content can not be empty!"
             });
-            return;
         }
         // save user in the database
         db.user.update(req.body, {
@@ -99,7 +107,9 @@ module.exports = {
     },
 
     findAll : (req, res) => {
-        db.user.findAll()
+        db.user.findAll({
+            attributes: { exclude: ["password"] }
+        })
         .then(data => {
             res.send(data);
         })
@@ -111,9 +121,11 @@ module.exports = {
     },
 
     findByid : (req, res) => {
-        const id = req.params.id;
-
-        db.user.findByPk(id)
+        const id = req.user_id;
+        
+        db.user.findByPk(id,{
+            attributes: { exclude: ["password"] }
+        })
         .then(data => {
             res.send(data);
         })

@@ -14,10 +14,12 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
           unique: true
         },
         description: {
-          type: DataTypes.STRING
+          type: DataTypes.STRING,
+          defaultValue: ""
         },
         image : {
-          type: DataTypes.STRING
+          type: DataTypes.STRING,
+          defaultValue: ""
         }
       }
     );

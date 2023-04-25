@@ -1,5 +1,4 @@
 const db = require("../models");
-const { findByid } = require("./book.controller");
 
 module.exports = {
     addItem : async (req, res) => {
@@ -111,9 +110,8 @@ module.exports = {
                 user_id: req.body.user_id
             },
             include: [{
-                attributes : ['id', 'title', 'author', 'price', 'description', 'publication_date'], 
                 model: db.books, 
-                attributes: ['title'], 
+                attributes : ['id', 'title', 'author', 'price', 'description', 'publication_date'], 
                 through: {attributes: ['quantity','total']}
             }]
         })

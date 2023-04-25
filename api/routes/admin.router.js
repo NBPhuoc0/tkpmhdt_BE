@@ -1,19 +1,24 @@
-module.exports = app => {
-  const userController = require("../controllers/user.controller");
-  const bookController = require("../controllers/book.controller");
-  const categoryController = require("../controllers/category.controller");
-  const orderController = require("../controllers/order.controller");
-  const cartController = require("../controllers/cart.controller");
-  const router = require("express").Router();
+const userController = require("../controllers/user.controller");
+const bookController = require("../controllers/book.controller");
+const categoryController = require("../controllers/category.controller");
+const orderController = require("../controllers/order.controller");
+const cartController = require("../controllers/cart.controller");
+const router = require("express").Router();
+const verify = require("../middlewares/authJwt").verifyToken_Admin;
 
-  // Signup
-  router.post("/signup", userController.signup);
+module.exports = (app) => {
 
-  // Signin
-  router.post("/signin", userController.signin);
+  // get profile
+  router.get("/profile", verify, userController.findByid);
 
   // update user
-  router.put("/user/:id", userController.updateProfile);
+  router.put("/profile/:id", userController.updateProfile);
+
+  // get all users
+  router.get("/users", userController.findAll);
+
+  // get user's profile
+  router.get("/users/:id", userController.findByid);
 
   // add category
   router.post("/categories", categoryController.create);
@@ -56,8 +61,6 @@ module.exports = app => {
 
   // get order by id
   router.get("/order/:id", orderController.getOderDetails);
-
-
 
 
   app.use('/admin', router);

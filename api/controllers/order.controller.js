@@ -104,7 +104,10 @@ module.exports = {
 
     getAllOder: (req, res) => {
         db.order.findAll({
-            include: [db.user]
+            include: [{
+                model: db.user,
+                attributes: ['name', 'email', 'phone', 'address']
+            }]
         })
         .then(data => {
             res.send(data);
@@ -136,9 +139,8 @@ module.exports = {
         db.order.findOne({
             where: { id: req.params.id },
             include: [{
+                model: db.book,
                 attributes : ['id', 'title', 'author', 'price', 'description', 'publication_date'], 
-                model: db.books, 
-                attributes: ['title'], 
                 through: {attributes: ['quantity','total']}
             }]
         })

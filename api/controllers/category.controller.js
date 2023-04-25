@@ -15,10 +15,29 @@ module.exports = {
         };
 
         // save book in the database
-        db.category.create(category)
+        db.category.findOne({where: {name: category.name}})
         .then(data => {
-            res.send(data);
-        })
+            if (data) {
+                res.status(400).send({
+                    message: "Category already exists!"
+                });
+            } else {
+                db.category.create(category)
+                .then(data => {
+                    res.status(200).send({
+                        message: "Category was created successfully."
+                    });
+                }).catch(err => {
+                    res.status(500).send({
+                        message: err.message || "Some error occurred while creating the Category."
+                    });
+                });
+            }
+        }).catch(err => {
+            res.status(500).send({
+                message: err.message || "Some error occurred while creating the Category."
+            });
+        });
     },
 
     update : (req, res) => {

@@ -80,13 +80,19 @@ module.exports = {
         const book_id = req.params.id;
         const categories = req.body.id;
 
-        categories.forEach(item => {
-            db.book_category.create({
-                book_id: book_id,
-                category_id: item
-            })
-        });
+        if (!db.books.findOne({where: {id: book_id}})) {
+            return res.status(400).send({
+                message: "Book not found."
+            });
+        }
 
+        categories.forEach( (item) => {
+            let category = db.category.findOne({where: {id: item}});
+            if (!category) {
+                db.book_category.create({book_id: book_id, category_id: item})
+            }
+        });
+        
         res.status(200).send({
             message: "successfully."
         });
@@ -96,6 +102,12 @@ module.exports = {
     removeBook_Category : (req, res) => {
         const book_id = req.params.id;
         const categories = req.body.id;
+
+        if (!db.books.findOne({where: {id: book_id}})) {
+            return res.status(400).send({
+                message: "Book not found."
+            });
+        }
 
         categories.forEach(item => {
             db.book_category.destroy({
@@ -186,6 +198,62 @@ module.exports = {
                 });
             }
         })
+    },
+
+    findByCategory : (req, res) => {
+        let author = req.query.author;
+        let title = req.query.title;
+        let from = req.query.from;
+        let to = req.query.to;
+        let year = req.query.year;
+        let page = req.query.page;
+        let sortD = req.query.sortD;
+        let sortBy = req.query.sort;
+
+        const categories = req.body.categories || [];
+
+        author = author ? author : ''
+        title = title ? title : ''
+        from = from ? from : 0
+        to = to ? to : 1000000000 // 1 tỷ =)))
+        year = year ? year : ''
+
+        if (page == null || page <= 0) page = 1
+        sortD = sortD ? sortD : 'ASC'
+        sortBy = sortBy ? sortBy : 'id'
+        
+        db.category.findAll({
+            where: { id: {
+                [db.Op.in]: categories
+            } },
+            include: [{
+                model: db.books,
+                where:
+                {
+                    author: 
+                    {
+                        [db.Op.substring]: author 
+                    },
+                    title: 
+                    {
+                        [db.Op.substring]: title 
+                    },
+                    price:
+                    {
+                        [db.Op.between]: [from, to]
+                    }
+                },
+                atributtes: [ db.sequelize.fn('YEAR', db.sequelize.col('publication_date')),year ]                              
+            }] 
+        },{            
+            offset: (page-1) * 10,
+            limit: 10,
+            order: [ sortBy, sortD ] 
+        })
+        .then(data => {
+            res.send(data);
+        })
+            
     },
 
 }

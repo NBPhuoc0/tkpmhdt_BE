@@ -1,52 +1,51 @@
-module.exports = app => {
-    const userController = require("../controllers/user.controller");
-    const bookController = require("../controllers/book.controller");
-    const categoryController = require("../controllers/category.controller");
-    const orderController = require("../controllers/order.controller");
-    const cartController = require("../controllers/cart.controller");
+const userController = require("../controllers/user.controller");
+const bookController = require("../controllers/book.controller");
+const categoryController = require("../controllers/category.controller");
+const orderController = require("../controllers/order.controller");
+const cartController = require("../controllers/cart.controller");
+const router = require("express").Router();
+const verify = require("../middlewares/authJwt").verifyToken_User;
 
-    const router = require("express").Router();
+module.exports = (app) => {
 
-    // Signup
-    router.post("/signup", userController.signup);
-
-    // Signin
-    router.post("/signin", userController.signin);
+    // get profile
+    router.get("/profile", verify, userController.findByid);
 
     // update user
-    router.put("/user/:id", userController.updateProfile);
+    router.put("/profile/:id", verify, userController.updateProfile);
 
     // Retrieve all Books
     router.get("/books", bookController.findAll);
 
     // find a single book with id
-    router.get("/books/:id", bookController.findByid);
+    router.get("/books/id/:id", bookController.findByid);
+
+    // find books by category
+    router.get("/books/category", bookController.findByCategory);
 
     // get all categories
     router.get("/categories", categoryController.findAll);
 
     // get cart
-    router.get("/cart", cartController.getCart);
+    router.get("/cart", verify, cartController.getCart);
 
     // add item to cart
-    router.post("/cart", cartController.addItem);
+    router.post("/cart", verify, cartController.addItem);
 
     // remove item from cart
-    router.delete("/cart", cartController.removeItem);
+    router.delete("/cart", verify, cartController.removeItem);
 
     // create order
-    router.post("/order", orderController.createOder);
+    router.post("/order", verify, orderController.createOder);
 
     // delete order
-    router.delete("/order/:id", orderController.deleteOrder);
+    router.delete("/order/:id", verify, orderController.deleteOrder);
     
     // get all orders
-    router.get("/order", orderController.getOders);
+    router.get("/order", verify, orderController.getOders);
 
     // get order by id
-    router.get("/order/:id", orderController.getOderDetails);
-
-
+    router.get("/order/:id", verify, orderController.getOderDetails);
 
     app.use('/user', router);
 };
