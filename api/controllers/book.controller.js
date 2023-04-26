@@ -1,3 +1,4 @@
+const { date } = require("joi");
 const db = require("../models");
 
 module.exports = {
@@ -130,14 +131,28 @@ module.exports = {
         let page = req.query.page;
         let sortD = req.query.sortD;
         let sortBy = req.query.sort;
+        let limit = parseInt(req.query.limit);
+
 
         author = author ? author : ''
         title = title ? title : ''
         from = from ? from : 0
         to = to ? to : 1000000000 // 1 tỷ =)))
-        year = year ? year : ''
+        let yearEnd = 0
+        if ( !year || year < 1970) {
+            year = 1970
+            yearEnd = 3000
+        } else {
+            yearEnd = parseInt(year) + 1
+        }
 
-        if (page == null || page <= 0) page = 1
+        if(from > to) {
+            let temp = from;
+            from = to;
+            to = temp;
+        }
+        if ( !page || page <= 0) page = 1
+        if ( !limit || limit <= 0) limit = 10
         sortD = sortD ? sortD : 'ASC'
         sortBy = sortBy ? sortBy : 'id'
         
@@ -156,16 +171,14 @@ module.exports = {
                     price:
                     {
                         [db.Op.between]: [from, to]
+                    },
+                    publication_date:{
+                        [db.Op.between]: [(new Date(year,0,0)), (new Date(yearEnd,0,0))]
                     }
-                } 
-            },
-            {
-                attributes: [ db.sequelize.fn('YEAR', db.sequelize.col('publication_date')),year ]
-            },
-            { 
-                offset: (page-1) * 10,
-                limit: 10,
-                order: [ sortBy, sortD ]
+                }, 
+                offset: (page-1) * limit,
+                limit: limit,
+                order: [[ sortBy, sortD ]],
             })
             .then(data => {
                 if (data.length > 0) {
@@ -208,6 +221,7 @@ module.exports = {
         let page = req.query.page;
         let sortD = req.query.sortD;
         let sortBy = req.query.sort;
+        let limit = req.query.limit;
 
         const categories = req.body.categories || [];
 
@@ -215,16 +229,34 @@ module.exports = {
         title = title ? title : ''
         from = from ? from : 0
         to = to ? to : 1000000000 // 1 tỷ =)))
-        year = year ? year : ''
+        let yearEnd = 0
+        if ( !year || year < 1970) {
+            year = 1970
+            yearEnd = 3000
+        } else {
+            yearEnd = parseInt(year) + 1
+        }
 
-        if (page == null || page <= 0) page = 1
+        if(from > to) {
+            let temp = from;
+            from = to;
+            to = temp;
+        }
+        if ( !page || page <= 0) page = 1
+        if ( !limit || limit <= 0) limit = 10
         sortD = sortD ? sortD : 'ASC'
         sortBy = sortBy ? sortBy : 'id'
         
-        db.category.findAll({
-            where: { id: {
-                [db.Op.in]: categories
-            } },
+        db.category.findAll(
+        {
+            where: { 
+                id: {
+                    [db.Op.in]: categories
+                }
+            },
+            offset: (page-1) * limit,
+            limit: limit,
+            order: [[ sortBy, sortD ]],
             include: [{
                 model: db.books,
                 where:
@@ -240,19 +272,21 @@ module.exports = {
                     price:
                     {
                         [db.Op.between]: [from, to]
+                    },
+                    publication_date:{
+                        [db.Op.between]: [(new Date(year,0,0)), (new Date(yearEnd,0,0))]
                     }
-                },
-                attributes: { exclude: ["book_category"],},
-                attributes : [ db.sequelize.fn('YEAR', db.sequelize.col('publication_date')),year ],
-                through: {attributes: []}
-            }] 
-        },{            
-            offset: (page-1) * 10,
-            limit: 10,
-            order: [ sortBy, sortD ] 
+                }
+            }]      
         })
         .then(data => {
-            res.send(data);
+            if (data.length > 0) {
+                res.send(data);
+            } else {
+                res.send({
+                    message: "No books found !"
+                });
+            }
         })
             
     },

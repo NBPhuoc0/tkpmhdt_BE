@@ -36,8 +36,11 @@ module.exports = (app) => {
   router.post("/books", verify, bookController.create);
 
   // Update a Book with id
-  router.put("/books/:id", verify, bookController.update);
-
+  router.put("/books/id/:id", verify, bookController.update);
+  
+  // find books by category
+  router.get("/books/category", bookController.findByCategory); 
+  
   // Delete a Book with id
   router.delete("/books/:id", verify, bookController.delete);
 
