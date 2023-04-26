@@ -9,8 +9,7 @@ module.exports = {
             
         }
 
-        let quantity = ( req.body.quantity == null ) ? 1 : req.body.quantity;
-
+        let quantity = ( req.body.quantity == null ) ? 1 : parseInt(req.body.quantity);
         let cart = await db.cart.findOne({
             where: {
                 user_id: req.user_id
@@ -44,34 +43,56 @@ module.exports = {
             })
 
             if(cart_details == null) {
-                db.cart_details.create({
-                    cart_id: cart.id,
-                    book_id: book.id,
-                    quantity: quantity
-                })
-            } else {
-                await db.cart_details.update({
-                    quantity: cart_details.quantity + quantity,
-                    total : cart_details.total + (book.price * quantity)
-                }, {
-                    where: {
+                if(quantity<=0) {
+                    return res.status(400).send({
+                        message: "Quantity must be greater than zero! Book haven't added to cart"
+                    });
+                } else{
+                    db.cart_details.create({
                         cart_id: cart.id,
-                        book_id: book.id
-                    }
-                })
+                        book_id: book.id,
+                        quantity: quantity  
+                    })
+                }
+            } else 
+            {
+                if(quantity<0 && cart_details.quantity <= Math.abs(quantity)) {
+                    await db.cart_details.destroy({
+                        where: {
+                            cart_id: cart.id,
+                            book_id: book.id
+                        },
+                        individualHooks: true
+                    })
+                    
+                    return res.status(200).send({
+                        message: "Item was removed successfully!"
+                    });
+                }
+                else{
+                    await db.cart_details.update({
+                        quantity: parseInt(cart_details.quantity) + quantity,
+                        total : parseInt(cart_details.total) + parseInt(parseInt(book.price) * (quantity))
+                    }, {
+                        where: {
+                            cart_id: cart.id,
+                            book_id: book.id
+                        }
+                    })
 
-                await db.cart.update({
-                    total: cart.total + (book.price * quantity),
-                    total_quantity: cart.total_quantity + quantity
-                }, {
-                    where: {
-                        id: cart.id
-                    }
-                })
+                    await db.cart.update({
+                        total: cart.total + (book.price * quantity),
+                        total_quantity: cart.total_quantity + quantity
+                    }, {
+                        where: {
+                            id: cart.id
+                        }
+                    })
+                }
             }
 
             res.status(200).send({
-                message: "Item was added successfully!"
+                message: "Item was update successfully!"
             });
 
         } catch (error) {
