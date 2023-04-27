@@ -131,6 +131,44 @@ module.exports = {
                 message: "Error retrieving user with id=" + id
             });
         });
-    }
+    },
 
+    changePassword: async (req, res) => {
+        const { oldPassword, newPassword } = req.body;
+        const userId = req.user_id;
+      
+        // Check if required data is provided
+        if (!oldPassword || !newPassword) {
+          return res.status(400).send({ message: "Old password and new password are required." });
+        }
+      
+        try 
+        {
+            // Find user by id from database
+            const user = await db.user.findByPk(userId);
+      
+            if (!user) {
+                return res.status(404).send({ message: "User not found." });
+            }
+      
+            // Check if old password is correct
+            const isPasswordCorrect = bcrypt.compareSync(oldPassword, user.password);
+            if (!isPasswordCorrect) {
+                return res.status(401).send({ message: "Invalid old password." });
+            }
+      
+            // Hash new password and update in database
+            const salt = bcrypt.genSaltSync(7);
+            const hashPass = bcrypt.hashSync(newPassword, salt);
+      
+            await db.user.update({ password: hashPass }, { where: { id: userId } });
+      
+            return res.status(200).send({ message: "Password updated successfully." });
+      
+        } 
+        catch (error) {
+            return res.status(500).send({ message: "An error occurred while updating password." });
+        }
+    }
+    
 }
