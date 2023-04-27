@@ -116,7 +116,7 @@ module.exports = {
             where: { id: req.params.id },
             include: [{
                 model: db.books,
-                attributes : ['id', 'title', 'author', 'price', 'description', 'publication_date'], 
+                attributes : ['id', 'title', 'author', 'price', 'description', 'publication_date', 'image'], 
                 through: {attributes: ['quantity','total']}
             }]
         })

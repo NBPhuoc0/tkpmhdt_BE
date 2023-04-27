@@ -154,12 +154,12 @@ module.exports = {
             },
             include: [{
                 model: db.books, 
-                attributes : ['id', 'title', 'author', 'price', 'description', 'publication_date'], 
+                attributes : ['id', 'title', 'author', 'price', 'description', 'publication_date', 'image'], 
                 through: {attributes: ['quantity','total']}
             }]
         })
 
-        if(data == null) {
+        if(data == null || data == []) {
             data = await db.cart.create({
                 user_id: req.user_id
             })
