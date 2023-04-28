@@ -14,7 +14,11 @@ module.exports = {
         const user = {
             username: req.body.username,
             email: req.body.email,
-            password: hashPass
+            password: hashPass,
+            phone_number: req.body.phone_number,
+            full_name: req.body.full_name,
+            address: req.body.address,
+            avatar: req.body.avatar
         };
 
         // save user in the database

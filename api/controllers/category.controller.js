@@ -12,6 +12,8 @@ module.exports = {
         // get data from request body
         const category = {
             name: req.body.name,
+            description: req.body.description,
+            image: req.body.image
         };
 
         // save book in the database
