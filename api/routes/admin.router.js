@@ -71,6 +71,9 @@ module.exports = (app) => {
   // change password
   router.put("/password", verify, userController.changePassword);
 
+  // get category by id
+  router.get("/category/:id", categoryController.findByid);
+
 
   app.use('/admin', router);
 };

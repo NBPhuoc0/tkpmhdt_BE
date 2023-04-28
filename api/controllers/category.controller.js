@@ -12,6 +12,8 @@ module.exports = {
         // get data from request body
         const category = {
             name: req.body.name,
+            description: req.body.description,
+            image: req.body.image
         };
 
         // save book in the database
@@ -87,6 +89,20 @@ module.exports = {
             res.send(data);
         })
     },
+
+    findByid : async (req, res) => {
+        const id = req.params.id;
+
+        try{
+            const data = await db.category.findByPk(id);
+            res.send(data);
+        }
+        catch(err){
+            res.status(500).send({
+                message: "Error retrieving Category with id=" + id
+            });
+        }
+    }
 
 
 }
