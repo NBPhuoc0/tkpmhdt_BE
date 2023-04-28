@@ -62,7 +62,7 @@ module.exports = {
     delete : (req, res) => {
         const id = req.params.id;
 
-        db.category.destroy({
+        db.category.update({isDelete: 1}, {
             where: { id: id }
         })
         .then(num => {

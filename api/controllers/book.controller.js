@@ -61,7 +61,7 @@ module.exports = {
     delete : (req, res) => {
         const id = req.params.id;
 
-        db.books.destroy({
+        db.books.update({isDelete: 1}, {
             where: { id: id }
         })
         .then(num => {
@@ -93,7 +93,7 @@ module.exports = {
                 db.book_category.create({book_id: book_id, category_id: item})
             }
         });
-        
+
         res.status(200).send({
             message: "successfully."
         });
@@ -155,18 +155,18 @@ module.exports = {
         if ( !limit || limit <= 0) limit = 10
         sortD = sortD ? sortD : 'ASC'
         sortBy = sortBy ? sortBy : 'id'
-        
+
         db.books.findAll(
             {
-                where: 
-                { 
-                    author: 
+                where:
+                {
+                    author:
                     {
-                        [db.Op.substring]: author 
+                        [db.Op.substring]: author
                     },
-                    title: 
+                    title:
                     {
-                        [db.Op.substring]: title 
+                        [db.Op.substring]: title
                     },
                     price:
                     {
@@ -175,7 +175,7 @@ module.exports = {
                     publication_date:{
                         [db.Op.between]: [(new Date(year,0,0)), (new Date(yearEnd,0,0))]
                     }
-                }, 
+                },
                 offset: (page-1) * limit,
                 limit: limit,
                 order: [[ sortBy, sortD ]],
@@ -190,13 +190,13 @@ module.exports = {
                 }
             })
     },
-    
+
     findByid : (req, res) => {
         const id = req.params.id;
 
-        db.books.findByPk(id, 
-            { 
-                include: 
+        db.books.findByPk(id,
+            {
+                include:
                 {
                     model: db.category
                 }
@@ -246,10 +246,10 @@ module.exports = {
         if ( !limit || limit <= 0) limit = 10
         sortD = sortD ? sortD : 'ASC'
         sortBy = sortBy ? sortBy : 'id'
-        
+
         db.category.findAll(
         {
-            where: { 
+            where: {
                 id: {
                     [db.Op.in]: categories
                 }
@@ -261,13 +261,13 @@ module.exports = {
                 model: db.books,
                 where:
                 {
-                    author: 
+                    author:
                     {
-                        [db.Op.substring]: author 
+                        [db.Op.substring]: author
                     },
-                    title: 
+                    title:
                     {
-                        [db.Op.substring]: title 
+                        [db.Op.substring]: title
                     },
                     price:
                     {
@@ -277,7 +277,7 @@ module.exports = {
                         [db.Op.between]: [(new Date(year,0,0)), (new Date(yearEnd,0,0))]
                     }
                 }
-            }]      
+            }]
         })
         .then(data => {
             if (data.length > 0) {
@@ -288,7 +288,7 @@ module.exports = {
                 });
             }
         })
-            
+
     },
 
 }

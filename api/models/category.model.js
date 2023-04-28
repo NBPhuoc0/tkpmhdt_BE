@@ -20,10 +20,13 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
         image : {
           type: DataTypes.STRING,
           defaultValue: ""
+        },
+        isDelete: {
+          type: DataTypes.INTEGER,
+          defaultValue: 0
         }
       }
     );
-  
+
     return Category;
   };
-  
