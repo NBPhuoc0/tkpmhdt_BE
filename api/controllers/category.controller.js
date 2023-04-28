@@ -80,29 +80,18 @@ module.exports = {
         })
     },
 
-    findAll : (req, res) => {
-        let name = req.query.name;
-        name = name ? name : '';
+    findAll : async (req, res) => {
+        let id = req.params.id;
+        id = id ? id : '';
 
-        db.category.findAll({ where: {name : { [db.Op.substring]: name }}})
-        .then(data => {
-            res.send(data);
-        })
-    },
-
-    findByid : async (req, res) => {
-        const id = req.params.id;
-
-        try{
-            const data = await db.category.findByPk(id);
-            res.send(data);
-        }
-        catch(err){
-            res.status(500).send({
-                message: "Error retrieving Category with id=" + id
+        const data = await db.category.findAll({ where: {id : { [db.Op.substring]: id }}})
+        if (data.length == 0) {
+            return res.status(400).send({
+                message: "Category not found!"
             });
         }
-    }
+        res.status(200).send(data);
+    },
 
 
 }
