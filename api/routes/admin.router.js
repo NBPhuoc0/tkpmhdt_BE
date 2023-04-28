@@ -68,6 +68,9 @@ module.exports = (app) => {
   // get order by id
   router.get("/order/:id", verify, orderController.getOderDetails);
 
+  // change password
+  router.put("/password", verify, userController.changePassword);
+
 
   app.use('/admin', router);
 };
