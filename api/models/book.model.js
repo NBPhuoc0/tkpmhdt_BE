@@ -26,10 +26,13 @@ module.exports = (sequelize, Sequelize, DataTypes) => {
         },
         publication_date:{
             type: DataTypes.DATE
+        },
+        isDelete:{
+          type: DataTypes.INTEGER,
+          defaultValue: 0
         }
       }
     );
-  
+
     return Book;
   };
-  
