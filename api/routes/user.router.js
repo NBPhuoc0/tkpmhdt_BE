@@ -21,7 +21,7 @@ module.exports = (app) => {
     router.get("/books/id/:id", bookController.findByid);
 
     // find books by category
-    router.get("/books/category", bookController.findByCategory);
+    router.post("/books/category", bookController.findByCategory);
 
     // get all categories
     router.get("/categories", categoryController.findAll);

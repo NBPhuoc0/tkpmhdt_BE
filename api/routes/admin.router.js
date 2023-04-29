@@ -39,7 +39,7 @@ module.exports = (app) => {
   router.put("/books/id/:id", verify, bookController.update);
 
   // find books by category
-  router.get("/books/category", bookController.findByCategory);
+  router.post("/books/category", bookController.findByCategory);
 
   // Delete a Book with id
   router.delete("/books/:id", verify, bookController.delete);
@@ -49,9 +49,6 @@ module.exports = (app) => {
 
   // find a single book with id
   router.get("/books/:id", bookController.findByid);
-
-  // find books by category
-  router.get("/books/category", bookController.findByCategory);
 
   // add category to book
   router.post("/books/:id/categories", verify, bookController.addBook_Category);
