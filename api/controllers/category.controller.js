@@ -84,7 +84,7 @@ module.exports = {
         let id = req.params.id;
         id = id ? id : '';
 
-        const data = await db.category.findAll({ where: {id : { [db.Op.substring]: id }}})
+        const data = await db.category.findAll({ where: {id : id}})
         if (data.length == 0) {
             return res.status(400).send({
                 message: "Category not found!"
