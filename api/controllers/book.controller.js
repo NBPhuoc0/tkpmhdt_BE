@@ -77,9 +77,16 @@ module.exports = {
         })
     },
 
-    addBook_Category : (req, res) => {
+    addBook_Category : async (req, res) => {
         const book_id = req.params.id;
         const categories = req.body.id;
+        let unSuccess = [];
+
+        if (categories.length == 0) {
+            return res.status(400).send({
+                message: "Categories can not be empty."
+            });
+        }
 
         if (!db.books.findOne({where: {id: book_id}})) {
             return res.status(400).send({
@@ -87,16 +94,32 @@ module.exports = {
             });
         }
 
-        categories.forEach( (item) => {
-            let category = db.category.findOne({where: {id: item}});
-            if (!category) {
-                db.book_category.create({book_id: book_id, category_id: item})
+        for (const item of categories) {
+            let cate = await db.category.findByPk(item);
+            if ( cate != null ) {
+                let data = await db.book_category.findOne({where: {book_id: book_id, category_id: item}});
+                if (data == null) {
+                    await db.book_category.create({book_id: book_id, category_id: item});
+                }
+                else {
+                    unSuccess.push(item);
+                }
             }
-        });
+            else {
+                unSuccess.push(item);
+            }
+        }
 
-        res.status(200).send({
-            message: "successfully."
-        });
+        if (unSuccess.length > 0) {
+            return await res.status(400).send({
+                message: "Categories not found or already exists.",
+                data:  unSuccess
+            });
+        } else {
+            await res.status(200).send({
+                message: "successfully"
+            });
+        }
 
     },
 

@@ -33,7 +33,7 @@ module.exports = (app) => {
   router.get("/categories", categoryController.findAll);
 
   // Create a new Book
-  router.post("/books", verify, bookController.create);
+  router.post("/books",  bookController.create);
 
   // Update a Book with id
   router.put("/books/id/:id", verify, bookController.update);
@@ -51,7 +51,7 @@ module.exports = (app) => {
   router.get("/books/:id", bookController.findByid);
 
   // add category to book
-  router.post("/books/:id/categories", verify, bookController.addBook_Category);
+  router.post("/books/:id/categories",  bookController.addBook_Category);
 
   // remove category from book
   router.delete("/books/:id/categories", verify, bookController.removeBook_Category);
