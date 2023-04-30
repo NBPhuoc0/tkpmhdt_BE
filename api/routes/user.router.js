@@ -48,7 +48,7 @@ module.exports = (app) => {
     router.get("/order/:id", verify, orderController.getOderDetails);
 
     // get category by id
-    router.get("/categories/:id", categoryController.findAll);
+    router.get("/categories/:id", categoryController.findById);
 
 
 

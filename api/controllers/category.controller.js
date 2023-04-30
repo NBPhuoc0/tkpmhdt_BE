@@ -80,7 +80,7 @@ module.exports = {
         })
     },
 
-    findAll : async (req, res) => {
+    findById : async (req, res) => {
         let id = req.params.id;
         id = id ? id : '';
 
@@ -93,5 +93,15 @@ module.exports = {
         res.status(200).send(data);
     },
 
+    findAll : async (req, res) => {
+
+        const data = await db.category.findAll();
+        if (!data) {
+            return res.status(400).send({
+                message: "Category not found!"
+            });
+        }
+        res.status(200).send(data);
+    }
 
 }

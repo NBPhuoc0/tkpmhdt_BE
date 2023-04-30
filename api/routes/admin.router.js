@@ -33,7 +33,7 @@ module.exports = (app) => {
   router.get("/categories", categoryController.findAll);
 
   // Create a new Book
-  router.post("/books",  bookController.create);
+  router.post("/books", verify,  bookController.create);
 
   // Update a Book with id
   router.put("/books/id/:id", verify, bookController.update);
@@ -69,7 +69,7 @@ module.exports = (app) => {
   router.put("/password", verify, userController.changePassword);
 
   // get category by id
-  router.get("/categories/:id", categoryController.findAll);
+  router.get("/categories/:id", categoryController.findById);
 
 
   app.use('/admin', router);
